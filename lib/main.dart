@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+import 'audio_service.dart';
+import 'quran_repository.dart';
 
 /// نقطة الدخول الرئيسية لتطبيق "نور القلوب".
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.instance.init();
+  // تحميل قاعدة البيانات المحلية للقرآن والتفسير مسبقاً.
+  try {
+    await QuranRepository.instance.load();
+  } catch (_) {
+    // في حال فشل التحميل تعمل الشاشات بوضع مبسّط دون تعطّل التطبيق.
+  }
   runApp(const NourAlQoloobApp());
 }
+
+/// رابط تلاوة تجريبي (بث) للتحقّق من عمل مشغّل الصوتيات للمقرئين.
+const String kSampleRecitationUrl =
+    'https://server8.mp3quran.net/afs/001.mp3';
 
 /// الجذر الأساسي للتطبيق مع دعم اللغة العربية والاتجاه من اليمين لليسار.
 class NourAlQoloobApp extends StatelessWidget {
@@ -306,14 +318,75 @@ class _AdhkarScreenState extends State<AdhkarScreen> {
             onSelectionChanged: (s) => setState(() => _isMorning = s.first),
           ),
         ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: RecitationPlayerBar(
+            url: kSampleRecitationUrl,
+            title: 'استماع لتلاوة القارئ',
+            subtitle: 'بث مباشر لتلاوة تجريبية للتأكّد من عمل المشغّل',
+          ),
+        ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 90),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
             itemCount: list.length,
             itemBuilder: (context, i) => DhikrCard(dhikr: list[i]),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// شريط تشغيل تلاوة يعتمد على [AudioService] مع زر تشغيل/إيقاف تفاعلي.
+class RecitationPlayerBar extends StatelessWidget {
+  final String url;
+  final String title;
+  final String subtitle;
+  const RecitationPlayerBar({
+    super.key,
+    required this.url,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: StreamBuilder<bool>(
+        stream: AudioService.instance.playingStream,
+        builder: (context, snapshot) {
+          final isThis = AudioService.instance.currentUrl == url;
+          final playing = isThis && (snapshot.data ?? false);
+          return ListTile(
+            leading: Icon(playing ? Icons.graphic_eq : Icons.headphones,
+                size: 30),
+            title: Text(title,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+            trailing: IconButton(
+              iconSize: 40,
+              icon: Icon(playing
+                  ? Icons.pause_circle_filled
+                  : Icons.play_circle_fill),
+              onPressed: () async {
+                try {
+                  await AudioService.instance.toggle(url);
+                } catch (_) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'تعذّر تشغيل الصوت (تحقّق من الاتصال بالإنترنت)')),
+                    );
+                  }
+                }
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -446,7 +519,6 @@ class PrayerTimesScreen extends StatefulWidget {
 }
 
 class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
-  final AudioPlayer _player = AudioPlayer();
   bool _alertsEnabled = false;
 
   // مواقيت افتراضية (يمكن ربطها لاحقاً بواجهة برمجية للمواقيت الدقيقة).
@@ -499,8 +571,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   Future<void> _playAdhan() async {
     try {
-      await _player.setUrl(_adhanUrl);
-      await _player.play();
+      await AudioService.instance.play(_adhanUrl);
       _snack('جارٍ تشغيل الأذان');
     } catch (_) {
       _snack('تعذّر تشغيل الأذان (تحقّق من الاتصال بالإنترنت)');
@@ -509,7 +580,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   Future<void> _stopAdhan() async {
     try {
-      await _player.stop();
+      await AudioService.instance.stop();
     } catch (_) {}
   }
 
@@ -517,12 +588,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  @override
-  void dispose() {
-    _player.dispose();
-    super.dispose();
   }
 
   @override
@@ -573,47 +638,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 }
 
 /// ===========================================================================
-/// شاشة القرآن الكريم: وضع الحفظ + قوائم منسدلة + الوضع العرضي.
+/// شاشة القرآن الكريم:
+/// - قاعدة بيانات محلية حقيقية (النص العثماني + التفسير الميسّر).
+/// - بحث داخل الآيات والتفسير.
+/// - وضع الحفظ بإخفاء تدريجي للكلمات (نسبة قابلة للضبط) وتظليل قابل للكشف.
+/// - قوائم منسدلة للتنقّل بين السور، ودعم الوضع العرضي لتكبير الخط.
 /// ===========================================================================
-class Surah {
-  final String name;
-  final List<String> verses;
-  const Surah(this.name, this.verses);
-}
-
-const List<Surah> _surahs = [
-  Surah('الفاتحة', [
-    'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-    'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
-    'الرَّحْمَٰنِ الرَّحِيمِ',
-    'مَالِكِ يَوْمِ الدِّينِ',
-    'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
-    'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ',
-    'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
-  ]),
-  Surah('الإخلاص', [
-    'قُلْ هُوَ اللَّهُ أَحَدٌ',
-    'اللَّهُ الصَّمَدُ',
-    'لَمْ يَلِدْ وَلَمْ يُولَدْ',
-    'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
-  ]),
-  Surah('الفلق', [
-    'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ',
-    'مِن شَرِّ مَا خَلَقَ',
-    'وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ',
-    'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ',
-    'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
-  ]),
-  Surah('الناس', [
-    'قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
-    'مَلِكِ النَّاسِ',
-    'إِلَٰهِ النَّاسِ',
-    'مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ',
-    'الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ',
-    'مِنَ الْجِنَّةِ وَالنَّاسِ',
-  ]),
-];
-
 class QuranScreen extends StatefulWidget {
   const QuranScreen({super.key});
 
@@ -622,9 +652,23 @@ class QuranScreen extends StatefulWidget {
 }
 
 class _QuranScreenState extends State<QuranScreen> {
+  final _repo = QuranRepository.instance;
+  final TextEditingController _searchController = TextEditingController();
+
   int _surahIndex = 0;
   bool _memorizeMode = false;
+  bool _showTafsir = false;
+  // نسبة الإخفاء في وضع الحفظ: 0 لا شيء، 1 إخفاء كامل.
+  double _hideRatio = 1.0;
   final Set<int> _revealed = {};
+  List<SearchHit> _searchResults = const [];
+  bool _searching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _selectSurah(int? i) {
     if (i == null) return;
@@ -634,124 +678,350 @@ class _QuranScreenState extends State<QuranScreen> {
     });
   }
 
+  void _runSearch(String query) {
+    if (!_repo.isLoaded) return;
+    setState(() {
+      _searching = query.trim().isNotEmpty;
+      _searchResults = _repo.search(query);
+    });
+  }
+
+  void _openHit(SearchHit hit) {
+    final idx =
+        _repo.surahs.indexWhere((s) => s.number == hit.surah.number);
+    if (idx < 0) return;
+    setState(() {
+      _surahIndex = idx;
+      _searchController.clear();
+      _searching = false;
+      _searchResults = const [];
+      _revealed.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final surah = _surahs[_surahIndex];
+    if (!_repo.isLoaded) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'تعذّر تحميل قاعدة بيانات القرآن. يرجى إعادة تشغيل التطبيق.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    final surah = _repo.surahs[_surahIndex];
     return OrientationBuilder(
       builder: (context, orientation) {
         final isLandscape = orientation == Orientation.landscape;
         // تكبير الخط في الوضع العرضي لتسهيل القراءة والحفظ.
-        final verseFontSize = isLandscape ? 30.0 : 22.0;
+        final verseFontSize = isLandscape ? 32.0 : 23.0;
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<int>(
-                      initialValue: _surahIndex,
-                      decoration: const InputDecoration(
-                        labelText: 'اختر السورة',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      items: [
-                        for (var i = 0; i < _surahs.length; i++)
-                          DropdownMenuItem(
-                              value: i, child: Text('سورة ${_surahs[i].name}')),
-                      ],
-                      onChanged: _selectSurah,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    children: [
-                      const Text('وضع الحفظ',
-                          style: TextStyle(fontSize: 12)),
-                      Switch(
-                        value: _memorizeMode,
-                        onChanged: (v) => setState(() {
-                          _memorizeMode = v;
-                          _revealed.clear();
-                        }),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (_memorizeMode && !isLandscape)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  'وضع الحفظ مُفعّل: الآيات مخفية، اضغط على أي آية لإظهارها. '
-                  'أدر الجهاز أفقياً لتكبير الخط.',
-                  style: TextStyle(color: Colors.teal),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
-                itemCount: surah.verses.length,
-                itemBuilder: (context, i) {
-                  final hidden = _memorizeMode && !_revealed.contains(i);
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    child: InkWell(
-                      onTap: _memorizeMode
-                          ? () => setState(() {
-                                if (_revealed.contains(i)) {
-                                  _revealed.remove(i);
-                                } else {
-                                  _revealed.add(i);
-                                }
-                              })
-                          : null,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              child: Text('${i + 1}',
-                                  style: const TextStyle(fontSize: 13)),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: hidden
-                                  ? Row(
-                                      children: [
-                                        Icon(Icons.visibility_off,
-                                            color: Colors.grey.shade400),
-                                        const SizedBox(width: 8),
-                                        Text('••••••  (اضغط للإظهار)',
-                                            style: TextStyle(
-                                                fontSize: verseFontSize,
-                                                color: Colors.grey.shade400)),
-                                      ],
-                                    )
-                                  : Text(
-                                      surah.verses[i],
-                                      style: TextStyle(
-                                          fontSize: verseFontSize,
-                                          height: 2.0),
-                                      textAlign: TextAlign.right,
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            _buildControls(surah),
+            if (_searching)
+              Expanded(child: _buildSearchResults(verseFontSize))
+            else
+              Expanded(child: _buildSurahView(surah, verseFontSize)),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildControls(QuranSurah surah) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      child: Column(
+        children: [
+          TextField(
+            controller: _searchController,
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: 'ابحث في الآيات والتفسير…',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searching
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        _runSearch('');
+                      },
+                    )
+                  : null,
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: _runSearch,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  initialValue: _surahIndex,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'اختر السورة',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  items: [
+                    for (var i = 0; i < _repo.surahs.length; i++)
+                      DropdownMenuItem(
+                        value: i,
+                        child: Text(
+                            '${_repo.surahs[i].number}. سورة ${_repo.surahs[i].name}'),
+                      ),
+                  ],
+                  onChanged: _selectSurah,
+                ),
+              ),
+              const SizedBox(width: 8),
+              _labeledSwitch(
+                label: 'التفسير',
+                value: _showTafsir,
+                onChanged: (v) => setState(() => _showTafsir = v),
+              ),
+              _labeledSwitch(
+                label: 'الحفظ',
+                value: _memorizeMode,
+                onChanged: (v) => setState(() {
+                  _memorizeMode = v;
+                  _revealed.clear();
+                }),
+              ),
+            ],
+          ),
+          if (_memorizeMode) _buildMemorizeControls(),
+        ],
+      ),
+    );
+  }
+
+  Widget _labeledSwitch({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11)),
+        Switch(value: value, onChanged: onChanged),
+      ],
+    );
+  }
+
+  Widget _buildMemorizeControls() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Text('مقدار الإخفاء', style: TextStyle(fontSize: 12)),
+            Expanded(
+              child: Slider(
+                value: _hideRatio,
+                divisions: 4,
+                label: '${(_hideRatio * 100).round()}%',
+                onChanged: (v) => setState(() {
+                  _hideRatio = v;
+                  _revealed.clear();
+                }),
+              ),
+            ),
+            Text('${(_hideRatio * 100).round()}%',
+                style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+        const Text(
+          'اقرأ الجزء الظاهر ثم اضغط على الآية لكشفها كاملة للتسميع.',
+          style: TextStyle(color: Colors.teal, fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSurahView(QuranSurah surah, double fontSize) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
+      itemCount: surah.ayahs.length,
+      itemBuilder: (context, i) {
+        final ayah = surah.ayahs[i];
+        final revealed = _revealed.contains(i);
+        final hide = _memorizeMode && !revealed;
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 5),
+          child: InkWell(
+            onTap: _memorizeMode
+                ? () => setState(() {
+                      if (revealed) {
+                        _revealed.remove(i);
+                      } else {
+                        _revealed.add(i);
+                      }
+                    })
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        child: Text('${ayah.number}',
+                            style: const TextStyle(fontSize: 13)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: hide
+                            ? _HiddenVerse(
+                                text: ayah.text,
+                                fontSize: fontSize,
+                                hideRatio: _hideRatio,
+                              )
+                            : Text(
+                                ayah.text,
+                                style: TextStyle(
+                                    fontSize: fontSize, height: 2.0),
+                                textAlign: TextAlign.right,
+                              ),
+                      ),
+                    ],
+                  ),
+                  if (_showTafsir && !hide) ...[
+                    const Divider(height: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.lightbulb_outline,
+                            size: 18, color: Colors.teal),
+                        const SizedBox(width: 6),
+                        Text('التفسير الميسّر',
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.teal.shade700,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      ayah.tafsir,
+                      style: const TextStyle(fontSize: 16, height: 1.7),
+                      textAlign: TextAlign.right,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchResults(double fontSize) {
+    if (_searchResults.isEmpty) {
+      return const Center(child: Text('لا توجد نتائج مطابقة.'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, i) {
+        final hit = _searchResults[i];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 5),
+          child: ListTile(
+            onTap: () => _openHit(hit),
+            title: Text(
+              hit.ayah.text,
+              style: const TextStyle(fontSize: 19, height: 1.9),
+              textAlign: TextAlign.right,
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'سورة ${hit.surah.name} — الآية ${hit.ayah.number}',
+                style: TextStyle(color: Colors.teal.shade700),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// عرض آية بوضع الحفظ مع إخفاء نسبة من كلماتها تدريجياً.
+class _HiddenVerse extends StatelessWidget {
+  final String text;
+  final double fontSize;
+  final double hideRatio;
+  const _HiddenVerse({
+    required this.text,
+    required this.fontSize,
+    required this.hideRatio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final words = text.split(' ');
+    // عدد الكلمات المخفيّة من نهاية الآية بحسب النسبة المختارة.
+    final hideCount = (words.length * hideRatio).round().clamp(0, words.length);
+    final visibleCount = words.length - hideCount;
+    final maskColor = Colors.grey.shade300;
+
+    final spans = <InlineSpan>[];
+    for (var i = 0; i < words.length; i++) {
+      final hidden = i >= visibleCount;
+      if (hidden) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: maskColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              '•' * words[i].characters.length.clamp(2, 8),
+              style: TextStyle(fontSize: fontSize, color: maskColor),
+            ),
+          ),
+        ));
+      } else {
+        spans.add(TextSpan(text: '${words[i]} '));
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text.rich(
+          TextSpan(
+            style: TextStyle(fontSize: fontSize, height: 2.0),
+            children: spans,
+          ),
+          textAlign: TextAlign.right,
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Icon(Icons.touch_app, size: 15, color: Colors.grey.shade500),
+            const SizedBox(width: 4),
+            Text('اضغط للكشف الكامل',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+          ],
+        ),
+      ],
     );
   }
 }
