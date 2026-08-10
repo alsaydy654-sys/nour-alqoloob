@@ -5,12 +5,16 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'audio_service.dart';
+import 'content_repository.dart';
+import 'l10n/app_localizations.dart';
+import 'locale_controller.dart';
 import 'quran_repository.dart';
 
 /// نقطة الدخول الرئيسية لتطبيق "نور القلوب".
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.instance.init();
+  await LocaleController.instance.load();
   // تحميل قاعدة البيانات المحلية للقرآن والتفسير مسبقاً.
   try {
     await QuranRepository.instance.load();
@@ -24,29 +28,31 @@ Future<void> main() async {
 const String kSampleRecitationUrl =
     'https://server8.mp3quran.net/afs/001.mp3';
 
-/// الجذر الأساسي للتطبيق مع دعم اللغة العربية والاتجاه من اليمين لليسار.
+/// الجذر الأساسي للتطبيق مع دعم تعدّد اللغات واتجاه RTL/LTR تلقائياً.
 class NourAlQoloobApp extends StatelessWidget {
   const NourAlQoloobApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     const seed = Color(0xFF1B5E4F);
-    return MaterialApp(
-      title: 'نور القلوب',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: seed,
-        brightness: Brightness.light,
-        fontFamily: 'Amiri',
-        appBarTheme: const AppBarTheme(centerTitle: true),
-      ),
-      locale: const Locale('ar'),
-      builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: child ?? const SizedBox.shrink(),
-      ),
-      home: const HomeShell(),
+    return AnimatedBuilder(
+      animation: LocaleController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: seed,
+            brightness: Brightness.light,
+            appBarTheme: const AppBarTheme(centerTitle: true),
+          ),
+          locale: LocaleController.instance.locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomeShell(),
+        );
+      },
     );
   }
 }
@@ -178,13 +184,6 @@ class _HomeShellState extends State<HomeShell> {
     QuranScreen(),
   ];
 
-  final List<String> _titles = const [
-    'الأذكار',
-    'الأدعية المأثورة',
-    'مواقيت الصلاة',
-    'القرآن الكريم',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -193,16 +192,25 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final titles = [t.titleAdhkar, t.titleDuas, t.titlePrayer, t.titleQuran];
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_index]),
+        title: Text(titles[_index]),
         actions: [
           IconButton(
-            tooltip: _showTasbeeh ? 'إخفاء المسبحة' : 'إظهار المسبحة',
+            tooltip: _showTasbeeh ? t.hideTasbeeh : t.showTasbeeh,
             icon: Icon(_showTasbeeh
                 ? Icons.radio_button_checked
                 : Icons.radio_button_unchecked),
             onPressed: () => setState(() => _showTasbeeh = !_showTasbeeh),
+          ),
+          IconButton(
+            tooltip: t.settings,
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
         ],
       ),
@@ -215,23 +223,23 @@ class _HomeShellState extends State<HomeShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-              icon: Icon(Icons.wb_sunny_outlined),
-              selectedIcon: Icon(Icons.wb_sunny),
-              label: 'الأذكار'),
+              icon: const Icon(Icons.wb_sunny_outlined),
+              selectedIcon: const Icon(Icons.wb_sunny),
+              label: t.tabAdhkar),
           NavigationDestination(
-              icon: Icon(Icons.volunteer_activism_outlined),
-              selectedIcon: Icon(Icons.volunteer_activism),
-              label: 'الأدعية'),
+              icon: const Icon(Icons.volunteer_activism_outlined),
+              selectedIcon: const Icon(Icons.volunteer_activism),
+              label: t.tabDuas),
           NavigationDestination(
-              icon: Icon(Icons.access_time_outlined),
-              selectedIcon: Icon(Icons.access_time_filled),
-              label: 'الصلاة'),
+              icon: const Icon(Icons.access_time_outlined),
+              selectedIcon: const Icon(Icons.access_time_filled),
+              label: t.tabPrayer),
           NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book),
-              label: 'القرآن'),
+              icon: const Icon(Icons.menu_book_outlined),
+              selectedIcon: const Icon(Icons.menu_book),
+              label: t.tabQuran),
         ],
       ),
     );
@@ -239,41 +247,58 @@ class _HomeShellState extends State<HomeShell> {
 }
 
 /// ===========================================================================
-/// نموذج ذِكر واحد مع العداد المطلوب.
+/// شاشة الإعدادات: اختيار اللغة يدوياً أو اتباع لغة الجهاز.
 /// ===========================================================================
-class Dhikr {
-  final String text;
-  final int count;
-  const Dhikr(this.text, {this.count = 1});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  static const Map<String, String> _nativeNames = {
+    'ar': 'العربية',
+    'en': 'English',
+    'fr': 'Français',
+    'ur': 'اردو',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final current = LocaleController.instance.locale;
+    return Scaffold(
+      appBar: AppBar(title: Text(t.settings)),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text(t.language,
+                style: Theme.of(context).textTheme.titleMedium),
+          ),
+          RadioGroup<Locale?>(
+            groupValue: current,
+            onChanged: (v) => LocaleController.instance.setLocale(v),
+            child: Column(
+              children: [
+                RadioListTile<Locale?>(
+                  title: Text(t.languageSystem),
+                  value: null,
+                ),
+                for (final locale in kSupportedLocales)
+                  RadioListTile<Locale?>(
+                    title: Text(_nativeNames[locale.languageCode] ??
+                        locale.languageCode),
+                    value: locale,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-const List<Dhikr> _morningAdhkar = [
-  Dhikr(
-      'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.',
-      count: 1),
-  Dhikr('سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.', count: 100),
-  Dhikr(
-      'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ (سيد الاستغفار).',
-      count: 1),
-  Dhikr('أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.',
-      count: 3),
-  Dhikr('لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.', count: 10),
-];
-
-const List<Dhikr> _eveningAdhkar = [
-  Dhikr(
-      'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.',
-      count: 1),
-  Dhikr('سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.', count: 100),
-  Dhikr('أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.',
-      count: 3),
-  Dhikr('اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ.',
-      count: 1),
-  Dhikr('حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ.',
-      count: 7),
-];
-
+/// ===========================================================================
 /// شاشة الأذكار الذكية: تختار الصباح/المساء تلقائياً حسب الوقت.
+/// ===========================================================================
 class AdhkarScreen extends StatefulWidget {
   const AdhkarScreen({super.key});
 
@@ -283,11 +308,30 @@ class AdhkarScreen extends StatefulWidget {
 
 class _AdhkarScreenState extends State<AdhkarScreen> {
   bool _isMorning = true;
+  AppContent? _content;
+  String? _loadedLang;
 
   @override
   void initState() {
     super.initState();
     _isMorning = _detectMorning();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _ensureContent();
+  }
+
+  Future<void> _ensureContent() async {
+    final lang = Localizations.localeOf(context).languageCode;
+    if (lang == _loadedLang) return;
+    final content = await ContentRepository.instance.forLanguage(lang);
+    if (!mounted) return;
+    setState(() {
+      _content = content;
+      _loadedLang = lang;
+    });
   }
 
   /// اعتبار الفترة من الرابعة صباحاً حتى الرابعة عصراً "صباحاً".
@@ -298,32 +342,37 @@ class _AdhkarScreenState extends State<AdhkarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final list = _isMorning ? _morningAdhkar : _eveningAdhkar;
+    final t = AppLocalizations.of(context);
+    final content = _content;
+    if (content == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final list = _isMorning ? content.morning : content.evening;
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(12),
           child: SegmentedButton<bool>(
-            segments: const [
+            segments: [
               ButtonSegment(
                   value: true,
-                  label: Text('أذكار الصباح'),
-                  icon: Icon(Icons.wb_sunny)),
+                  label: Text(t.adhkarMorning),
+                  icon: const Icon(Icons.wb_sunny)),
               ButtonSegment(
                   value: false,
-                  label: Text('أذكار المساء'),
-                  icon: Icon(Icons.nightlight_round)),
+                  label: Text(t.adhkarEvening),
+                  icon: const Icon(Icons.nightlight_round)),
             ],
             selected: {_isMorning},
             onSelectionChanged: (s) => setState(() => _isMorning = s.first),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: RecitationPlayerBar(
             url: kSampleRecitationUrl,
-            title: 'استماع لتلاوة القارئ',
-            subtitle: 'بث مباشر لتلاوة تجريبية للتأكّد من عمل المشغّل',
+            title: t.listenReciter,
+            subtitle: t.listenReciterSubtitle,
           ),
         ),
         Expanded(
@@ -352,6 +401,7 @@ class RecitationPlayerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Card(
       color: Theme.of(context).colorScheme.primaryContainer,
       child: StreamBuilder<bool>(
@@ -376,9 +426,7 @@ class RecitationPlayerBar extends StatelessWidget {
                 } catch (_) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'تعذّر تشغيل الصوت (تحقّق من الاتصال بالإنترنت)')),
+                      SnackBar(content: Text(t.audioError)),
                     );
                   }
                 }
@@ -391,9 +439,9 @@ class RecitationPlayerBar extends StatelessWidget {
   }
 }
 
-/// بطاقة ذِكر مع عدّاد تفاعلي.
+/// بطاقة ذِكر مع عدّاد تفاعلي، تعرض النص العربي وترجمة المعنى إن وُجدت.
 class DhikrCard extends StatefulWidget {
-  final Dhikr dhikr;
+  final LocalizedDhikr dhikr;
   const DhikrCard({super.key, required this.dhikr});
 
   @override
@@ -405,7 +453,9 @@ class _DhikrCardState extends State<DhikrCard> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final finished = _done >= widget.dhikr.count;
+    final translation = widget.dhikr.translation;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
@@ -418,10 +468,21 @@ class _DhikrCardState extends State<DhikrCard> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                widget.dhikr.text,
+                widget.dhikr.arabic,
                 style: const TextStyle(fontSize: 20, height: 1.8),
                 textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
               ),
+              if (translation.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  translation,
+                  style: TextStyle(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: Theme.of(context).colorScheme.outline),
+                ),
+              ],
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -435,8 +496,8 @@ class _DhikrCardState extends State<DhikrCard> {
                   if (finished)
                     const Icon(Icons.check_circle, color: Colors.green)
                   else
-                    const Text('اضغط للعدّ',
-                        style: TextStyle(color: Colors.grey)),
+                    Text(t.tapToCount,
+                        style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ],
@@ -450,35 +511,45 @@ class _DhikrCardState extends State<DhikrCard> {
 /// ===========================================================================
 /// شاشة الأدعية المأثورة.
 /// ===========================================================================
-class DuaItem {
-  final String title;
-  final String text;
-  const DuaItem(this.title, this.text);
-}
-
-const List<DuaItem> _duas = [
-  DuaItem('دعاء الهمّ والحزن',
-      'اللَّهُمَّ إِنِّي عَبْدُكَ ابْنُ عَبْدِكَ ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ.'),
-  DuaItem('دعاء الاستخارة',
-      'اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ.'),
-  DuaItem('دعاء دخول المنزل',
-      'بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا.'),
-  DuaItem('دعاء الكرب',
-      'لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ.'),
-  DuaItem('جوامع الدعاء',
-      'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.'),
-];
-
-class DuaScreen extends StatelessWidget {
+class DuaScreen extends StatefulWidget {
   const DuaScreen({super.key});
 
   @override
+  State<DuaScreen> createState() => _DuaScreenState();
+}
+
+class _DuaScreenState extends State<DuaScreen> {
+  List<LocalizedDua>? _duas;
+  String? _loadedLang;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _ensureContent();
+  }
+
+  Future<void> _ensureContent() async {
+    final lang = Localizations.localeOf(context).languageCode;
+    if (lang == _loadedLang) return;
+    final content = await ContentRepository.instance.forLanguage(lang);
+    if (!mounted) return;
+    setState(() {
+      _duas = content.duas;
+      _loadedLang = lang;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final duas = _duas;
+    if (duas == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
-      itemCount: _duas.length,
+      itemCount: duas.length,
       itemBuilder: (context, i) {
-        final d = _duas[i];
+        final d = duas[i];
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ExpansionTile(
@@ -487,9 +558,18 @@ class DuaScreen extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             childrenPadding: const EdgeInsets.all(16),
             children: [
-              Text(d.text,
+              Text(d.arabic,
                   style: const TextStyle(fontSize: 19, height: 1.8),
-                  textAlign: TextAlign.right),
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl),
+              if (d.translation.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(d.translation,
+                    style: TextStyle(
+                        fontSize: 15,
+                        height: 1.6,
+                        color: Theme.of(context).colorScheme.outline)),
+              ],
             ],
           ),
         );
@@ -502,10 +582,9 @@ class DuaScreen extends StatelessWidget {
 /// شاشة مواقيت الصلاة مع التنبيهات الصوتية.
 /// ===========================================================================
 class PrayerTime {
-  final String name;
   final int hour;
   final int minute;
-  const PrayerTime(this.name, this.hour, this.minute);
+  const PrayerTime(this.hour, this.minute);
 
   String get formatted =>
       '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
@@ -523,11 +602,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   // مواقيت افتراضية (يمكن ربطها لاحقاً بواجهة برمجية للمواقيت الدقيقة).
   final List<PrayerTime> _times = const [
-    PrayerTime('الفجر', 4, 30),
-    PrayerTime('الظهر', 12, 15),
-    PrayerTime('العصر', 15, 45),
-    PrayerTime('المغرب', 18, 40),
-    PrayerTime('العشاء', 20, 10),
+    PrayerTime(4, 30),
+    PrayerTime(12, 15),
+    PrayerTime(15, 45),
+    PrayerTime(18, 40),
+    PrayerTime(20, 10),
   ];
 
   static const _adhanUrl =
@@ -539,6 +618,14 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     _loadPrefs();
   }
 
+  List<String> _prayerNames(AppLocalizations t) => [
+        t.prayerFajr,
+        t.prayerDhuhr,
+        t.prayerAsr,
+        t.prayerMaghrib,
+        t.prayerIsha,
+      ];
+
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -546,35 +633,38 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 
   Future<void> _toggleAlerts(bool value) async {
+    final t = AppLocalizations.of(context);
+    final names = _prayerNames(t);
     setState(() => _alertsEnabled = value);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('alerts_enabled', value);
     if (value) {
       for (var i = 0; i < _times.length; i++) {
-        final t = _times[i];
+        final time = _times[i];
         await NotificationService.instance.scheduleDaily(
           100 + i,
-          'حان الآن موعد ${t.name}',
-          'الله أكبر، حيّ على الصلاة',
-          t.hour,
-          t.minute,
+          t.prayerNotifTitle(names[i]),
+          t.prayerNotifBody,
+          time.hour,
+          time.minute,
         );
       }
-      _snack('تم تفعيل تنبيهات الصلاة');
+      _snack(t.alertsOn);
     } else {
       for (var i = 0; i < _times.length; i++) {
         await NotificationService.instance.cancel(100 + i);
       }
-      _snack('تم إيقاف تنبيهات الصلاة');
+      _snack(t.alertsOff);
     }
   }
 
   Future<void> _playAdhan() async {
+    final t = AppLocalizations.of(context);
     try {
       await AudioService.instance.play(_adhanUrl);
-      _snack('جارٍ تشغيل الأذان');
+      _snack(t.playingAdhan);
     } catch (_) {
-      _snack('تعذّر تشغيل الأذان (تحقّق من الاتصال بالإنترنت)');
+      _snack(t.adhanError);
     }
   }
 
@@ -592,26 +682,29 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final names = _prayerNames(t);
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 90),
       children: [
         SwitchListTile(
-          title: const Text('تفعيل التنبيهات الصوتية للصلاة'),
-          subtitle: const Text('يذكّرك بموعد كل صلاة يومياً'),
+          title: Text(t.prayerAlertsTitle),
+          subtitle: Text(t.prayerAlertsSubtitle),
           value: _alertsEnabled,
           onChanged: _toggleAlerts,
         ),
         const SizedBox(height: 8),
-        ..._times.map((t) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.mosque, size: 32),
-                title: Text(t.name,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
-                trailing: Text(t.formatted,
-                    style: const TextStyle(fontSize: 20)),
-              ),
-            )),
+        for (var i = 0; i < _times.length; i++)
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.mosque, size: 32),
+              title: Text(names[i],
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              trailing: Text(_times[i].formatted,
+                  style: const TextStyle(fontSize: 20)),
+            ),
+          ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -619,7 +712,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               child: FilledButton.icon(
                 onPressed: _playAdhan,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('تشغيل الأذان'),
+                label: Text(t.playAdhan),
               ),
             ),
             const SizedBox(width: 12),
@@ -627,7 +720,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               child: OutlinedButton.icon(
                 onPressed: _stopAdhan,
                 icon: const Icon(Icons.stop),
-                label: const Text('إيقاف'),
+                label: Text(t.stop),
               ),
             ),
           ],
@@ -701,14 +794,12 @@ class _QuranScreenState extends State<QuranScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     if (!_repo.isLoaded) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'تعذّر تحميل قاعدة بيانات القرآن. يرجى إعادة تشغيل التطبيق.',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(24),
+          child: Text(t.quranLoadError, textAlign: TextAlign.center),
         ),
       );
     }
@@ -721,18 +812,19 @@ class _QuranScreenState extends State<QuranScreen> {
         final verseFontSize = isLandscape ? 32.0 : 23.0;
         return Column(
           children: [
-            _buildControls(surah),
+            _buildControls(t),
             if (_searching)
-              Expanded(child: _buildSearchResults(verseFontSize))
+              Expanded(child: _buildSearchResults(t))
             else
-              Expanded(child: _buildSurahView(surah, verseFontSize)),
+              Expanded(child: _buildSurahView(t, surah, verseFontSize)),
           ],
         );
       },
     );
   }
 
-  Widget _buildControls(QuranSurah surah) {
+  Widget _buildControls(AppLocalizations t) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
       child: Column(
@@ -741,7 +833,7 @@ class _QuranScreenState extends State<QuranScreen> {
             controller: _searchController,
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'ابحث في الآيات والتفسير…',
+              hintText: t.quranSearchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searching
                   ? IconButton(
@@ -764,17 +856,16 @@ class _QuranScreenState extends State<QuranScreen> {
                 child: DropdownButtonFormField<int>(
                   initialValue: _surahIndex,
                   isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'اختر السورة',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: t.chooseSurah,
+                    border: const OutlineInputBorder(),
                     isDense: true,
                   ),
                   items: [
                     for (var i = 0; i < _repo.surahs.length; i++)
                       DropdownMenuItem(
                         value: i,
-                        child: Text(
-                            '${_repo.surahs[i].number}. سورة ${_repo.surahs[i].name}'),
+                        child: Text(_surahLabel(t, i, isArabic)),
                       ),
                   ],
                   onChanged: _selectSurah,
@@ -782,12 +873,12 @@ class _QuranScreenState extends State<QuranScreen> {
               ),
               const SizedBox(width: 8),
               _labeledSwitch(
-                label: 'التفسير',
+                label: t.tafsir,
                 value: _showTafsir,
                 onChanged: (v) => setState(() => _showTafsir = v),
               ),
               _labeledSwitch(
-                label: 'الحفظ',
+                label: t.memorize,
                 value: _memorizeMode,
                 onChanged: (v) => setState(() {
                   _memorizeMode = v;
@@ -796,10 +887,17 @@ class _QuranScreenState extends State<QuranScreen> {
               ),
             ],
           ),
-          if (_memorizeMode) _buildMemorizeControls(),
+          if (_memorizeMode) _buildMemorizeControls(t),
         ],
       ),
     );
+  }
+
+  /// اسم السورة في القائمة: بالعربية للعرب، وبالاسم اللاتيني لغيرها.
+  String _surahLabel(AppLocalizations t, int i, bool isArabic) {
+    final s = _repo.surahs[i];
+    if (isArabic) return '${s.number}. ${t.surahWord} ${s.name}';
+    return '${s.number}. ${t.surahWord} ${s.englishName}';
   }
 
   Widget _labeledSwitch({
@@ -816,12 +914,12 @@ class _QuranScreenState extends State<QuranScreen> {
     );
   }
 
-  Widget _buildMemorizeControls() {
+  Widget _buildMemorizeControls(AppLocalizations t) {
     return Column(
       children: [
         Row(
           children: [
-            const Text('مقدار الإخفاء', style: TextStyle(fontSize: 12)),
+            Text(t.hideAmount, style: const TextStyle(fontSize: 12)),
             Expanded(
               child: Slider(
                 value: _hideRatio,
@@ -837,16 +935,17 @@ class _QuranScreenState extends State<QuranScreen> {
                 style: const TextStyle(fontSize: 12)),
           ],
         ),
-        const Text(
-          'اقرأ الجزء الظاهر ثم اضغط على الآية لكشفها كاملة للتسميع.',
-          style: TextStyle(color: Colors.teal, fontSize: 12),
+        Text(
+          t.memorizeHint,
+          style: const TextStyle(color: Colors.teal, fontSize: 12),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildSurahView(QuranSurah surah, double fontSize) {
+  Widget _buildSurahView(
+      AppLocalizations t, QuranSurah surah, double fontSize) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
       itemCount: surah.ayahs.length,
@@ -873,6 +972,7 @@ class _QuranScreenState extends State<QuranScreen> {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    textDirection: TextDirection.rtl,
                     children: [
                       CircleAvatar(
                         radius: 16,
@@ -886,12 +986,14 @@ class _QuranScreenState extends State<QuranScreen> {
                                 text: ayah.text,
                                 fontSize: fontSize,
                                 hideRatio: _hideRatio,
+                                hint: t.tapToReveal,
                               )
                             : Text(
                                 ayah.text,
                                 style: TextStyle(
                                     fontSize: fontSize, height: 2.0),
                                 textAlign: TextAlign.right,
+                                textDirection: TextDirection.rtl,
                               ),
                       ),
                     ],
@@ -903,7 +1005,7 @@ class _QuranScreenState extends State<QuranScreen> {
                         const Icon(Icons.lightbulb_outline,
                             size: 18, color: Colors.teal),
                         const SizedBox(width: 6),
-                        Text('التفسير الميسّر',
+                        Text(t.tafsirLabel,
                             style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.teal.shade700,
@@ -915,6 +1017,7 @@ class _QuranScreenState extends State<QuranScreen> {
                       ayah.tafsir,
                       style: const TextStyle(fontSize: 16, height: 1.7),
                       textAlign: TextAlign.right,
+                      textDirection: TextDirection.rtl,
                     ),
                   ],
                 ],
@@ -926,9 +1029,9 @@ class _QuranScreenState extends State<QuranScreen> {
     );
   }
 
-  Widget _buildSearchResults(double fontSize) {
+  Widget _buildSearchResults(AppLocalizations t) {
     if (_searchResults.isEmpty) {
-      return const Center(child: Text('لا توجد نتائج مطابقة.'));
+      return Center(child: Text(t.noResults));
     }
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
@@ -943,11 +1046,12 @@ class _QuranScreenState extends State<QuranScreen> {
               hit.ayah.text,
               style: const TextStyle(fontSize: 19, height: 1.9),
               textAlign: TextAlign.right,
+              textDirection: TextDirection.rtl,
             ),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'سورة ${hit.surah.name} — الآية ${hit.ayah.number}',
+                t.searchResultSubtitle(hit.surah.name, hit.ayah.number),
                 style: TextStyle(color: Colors.teal.shade700),
               ),
             ),
@@ -963,10 +1067,12 @@ class _HiddenVerse extends StatelessWidget {
   final String text;
   final double fontSize;
   final double hideRatio;
+  final String hint;
   const _HiddenVerse({
     required this.text,
     required this.fontSize,
     required this.hideRatio,
+    required this.hint,
   });
 
   @override
@@ -1010,6 +1116,7 @@ class _HiddenVerse extends StatelessWidget {
             children: spans,
           ),
           textAlign: TextAlign.right,
+          textDirection: TextDirection.rtl,
         ),
         const SizedBox(height: 6),
         Row(
@@ -1017,7 +1124,7 @@ class _HiddenVerse extends StatelessWidget {
           children: [
             Icon(Icons.touch_app, size: 15, color: Colors.grey.shade500),
             const SizedBox(width: 4),
-            Text('اضغط للكشف الكامل',
+            Text(hint,
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
           ],
         ),

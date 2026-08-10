@@ -1,0 +1,23 @@
+{
+  "morning": [
+    { "ar": "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "Nous voici au matin et la royauté appartient à Allah. Louange à Allah. Il n'y a de dieu qu'Allah, Seul, sans associé.", "count": 1 },
+    { "ar": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", "tr": "Gloire et louange à Allah.", "count": 100 },
+    { "ar": "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ (سيد الاستغفار).", "tr": "Ô Allah, Tu es mon Seigneur, il n'y a de dieu que Toi. Tu m'as créé et je suis Ton serviteur (le maître de la demande de pardon).", "count": 1 },
+    { "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", "tr": "Je cherche refuge dans les paroles parfaites d'Allah contre le mal de ce qu'Il a créé.", "count": 3 },
+    { "ar": "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "Il n'y a de dieu qu'Allah, Seul, sans associé.", "count": 10 }
+  ],
+  "evening": [
+    { "ar": "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "Nous voici au soir et la royauté appartient à Allah. Louange à Allah. Il n'y a de dieu qu'Allah, Seul, sans associé.", "count": 1 },
+    { "ar": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", "tr": "Gloire et louange à Allah.", "count": 100 },
+    { "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", "tr": "Je cherche refuge dans les paroles parfaites d'Allah contre le mal de ce qu'Il a créé.", "count": 3 },
+    { "ar": "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ.", "tr": "Ô Allah, par Toi nous entrons dans le soir et le matin, par Toi nous vivons et mourons.", "count": 1 },
+    { "ar": "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ.", "tr": "Allah me suffit ; il n'y a de dieu que Lui. C'est en Lui que je place ma confiance.", "count": 7 }
+  ],
+  "duas": [
+    { "title": "Invocation contre l'angoisse et la tristesse", "ar": "اللَّهُمَّ إِنِّي عَبْدُكَ ابْنُ عَبْدِكَ ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ.", "tr": "Ô Allah, je suis Ton serviteur, fils de Ton serviteur, fils de Ta servante. Mon toupet est dans Ta main, Ton jugement s'applique à moi et Ton décret à mon égard est juste." },
+    { "title": "Invocation de l'Istikhara (demande de guidance)", "ar": "اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ.", "tr": "Ô Allah, je Te demande de me guider par Ta science, je Te demande la capacité par Ta puissance, et je Te demande de Ton immense grâce." },
+    { "title": "Invocation pour entrer dans la maison", "ar": "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا.", "tr": "Au nom d'Allah nous entrons, au nom d'Allah nous sortons, et en notre Seigneur nous plaçons notre confiance." },
+    { "title": "Invocation en cas de détresse", "ar": "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ.", "tr": "Il n'y a de dieu qu'Allah, le Très-Grand, le Très-Indulgent ; il n'y a de dieu qu'Allah, Seigneur du Trône immense." },
+    { "title": "Invocation globale", "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.", "tr": "Notre Seigneur, accorde-nous une belle part ici-bas et une belle part dans l'au-delà, et préserve-nous du châtiment du Feu." }
+  ]
+}
