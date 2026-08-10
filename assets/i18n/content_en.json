@@ -1,0 +1,23 @@
+{
+  "morning": [
+    { "ar": "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "We have entered the morning and the dominion belongs to Allah. Praise be to Allah. There is no god but Allah alone, with no partner.", "count": 1 },
+    { "ar": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", "tr": "Glory and praise be to Allah.", "count": 100 },
+    { "ar": "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ (سيد الاستغفار).", "tr": "O Allah, You are my Lord, there is no god but You. You created me and I am Your servant (the master of seeking forgiveness).", "count": 1 },
+    { "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", "tr": "I seek refuge in the perfect words of Allah from the evil of what He created.", "count": 3 },
+    { "ar": "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "There is no god but Allah alone, with no partner.", "count": 10 }
+  ],
+  "evening": [
+    { "ar": "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ.", "tr": "We have entered the evening and the dominion belongs to Allah. Praise be to Allah. There is no god but Allah alone, with no partner.", "count": 1 },
+    { "ar": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", "tr": "Glory and praise be to Allah.", "count": 100 },
+    { "ar": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", "tr": "I seek refuge in the perfect words of Allah from the evil of what He created.", "count": 3 },
+    { "ar": "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ.", "tr": "O Allah, by You we enter the evening and the morning, by You we live and die.", "count": 1 },
+    { "ar": "حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ.", "tr": "Allah is sufficient for me; there is no god but He. In Him I put my trust.", "count": 7 }
+  ],
+  "duas": [
+    { "title": "Supplication for anxiety and grief", "ar": "اللَّهُمَّ إِنِّي عَبْدُكَ ابْنُ عَبْدِكَ ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ.", "tr": "O Allah, I am Your servant, son of Your servant, son of Your maidservant. My forelock is in Your hand, Your judgement upon me is assured, and Your decree concerning me is just." },
+    { "title": "Supplication of Istikharah (seeking guidance)", "ar": "اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ الْعَظِيمِ.", "tr": "O Allah, I seek Your guidance by Your knowledge, and I seek ability by Your power, and I ask You of Your great bounty." },
+    { "title": "Supplication for entering the home", "ar": "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا.", "tr": "In the name of Allah we enter, in the name of Allah we leave, and upon our Lord we rely." },
+    { "title": "Supplication for distress", "ar": "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ.", "tr": "There is no god but Allah, the Mighty, the Forbearing; there is no god but Allah, Lord of the Magnificent Throne." },
+    { "title": "Comprehensive supplication", "ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.", "tr": "Our Lord, grant us good in this world and good in the Hereafter, and protect us from the punishment of the Fire." }
+  ]
+}

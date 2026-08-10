@@ -1,17 +1,105 @@
-# nour_alqoloob
+# نور القلوب — Nour Al-Qoloob
 
-A new Flutter project.
+تطبيق Flutter إسلامي: الأذكار، الأدعية المأثورة، مواقيت الصلاة والتنبيهات، القرآن الكريم
+مع التفسير الميسّر ووضع المساعدة على الحفظ، ومسبحة رقمية عائمة.
 
-## Getting Started
+## التشغيل
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+## البنية
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+| الملف | الوظيفة |
+| --- | --- |
+| `lib/main.dart` | الشاشات وشريط التنقّل والمسبحة العائمة |
+| `lib/quran_repository.dart` | قاعدة بيانات القرآن المحلية + البحث مع تطبيع النص العربي |
+| `lib/content_repository.dart` | تحميل الأذكار والأدعية المترجمة من `assets/i18n` |
+| `lib/locale_controller.dart` | اللغة المختارة يدوياً وحفظها |
+| `lib/audio_service.dart` | مشغّل الصوت (بث التلاوات والأذان) |
+| `lib/settings_controller.dart` | إعدادات المستخدم المحفوظة (السمة، حجم الخط، المقرئ، التنبيهات، الموقع) |
+| `lib/prayer_times_service.dart` | حساب مواقيت الصلاة من الـGPS عبر حزمة `adhan` |
+| `lib/notification_service.dart` | تنبيهات الأذان والأذكار الدورية في الخلفية |
+| `lib/overlay_tasbeeh.dart` | المسبحة العائمة فوق التطبيقات الأخرى (أندرويد) |
+| `lib/reciters.dart` | قائمة المقرئين وروابط التلاوات |
+| `lib/l10n/*.arb` | نصوص الواجهة لكل لغة |
+| `assets/quran/quran.json` | النص العثماني (6236 آية) + التفسير الميسّر |
+| `assets/i18n/content_*.json` | نصوص الأذكار والأدعية وترجماتها |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## التدويل (i18n)
+
+- نصوص **الواجهة** في ملفات ARB داخل `lib/l10n/` وتُولَّد عبر `flutter gen-l10n`
+  (تلقائياً مع `flutter pub get` لأن `generate: true` مُفعّل في `pubspec.yaml`).
+- نصوص **المحتوى** (الأذكار والأدعية) في `assets/i18n/content_<lang>.json`، حيث
+  يبقى نص الذِّكر العربي ثابتاً في كل اللغات (لأنه نص العبادة) ويتغيّر حقل `tr`
+  (المعنى) والعناوين حسب اللغة.
+- اللغات الحالية: العربية `ar`، الإنجليزية `en`، الفرنسية `fr`، الأوردو `ur`.
+- الاتجاه (RTL/LTR) يُحدَّد تلقائياً من اللغة عبر `flutter_localizations`
+  (العربية والأوردو من اليمين لليسار، الإنجليزية والفرنسية من اليسار لليمين).
+- اللغة تُتبع من الجهاز افتراضياً، ويمكن اختيارها يدوياً من **الإعدادات** وتُحفَظ
+  في `SharedPreferences`.
+
+### كيف تُضيف لغة جديدة (مثال: التركية `tr`)
+
+1. أنشئ `lib/l10n/app_tr.arb` بنسخ `lib/l10n/app_ar.arb` وترجمة القيم
+   (احتفظ بنفس المفاتيح، ولا حاجة لتكرار حقول `@key`).
+2. أنشئ `assets/i18n/content_tr.json` بنسخ `assets/i18n/content_en.json`
+   وترجمة `title` و`tr` فقط، مع إبقاء `ar` و`count` كما هما.
+3. أضف الأصل في `pubspec.yaml` تحت `assets:`:
+   `- assets/i18n/content_tr.json`
+4. أضف رمز اللغة إلى `ContentRepository.supported` في
+   `lib/content_repository.dart`، وأضف `Locale('tr')` إلى `kSupportedLocales`
+   في `lib/locale_controller.dart`.
+5. أضف الاسم المحلي للغة إلى `_nativeNames` في شاشة الإعدادات (`lib/main.dart`).
+6. نفّذ `flutter pub get` (أو `flutter gen-l10n`) ثم `flutter run`.
+
+اللغة تظهر تلقائياً في قائمة الإعدادات، ويُضبط الاتجاه تلقائياً من بيانات اللغة.
+
+## مواقيت الصلاة والتنبيهات الخلفية
+
+- المواقيت تُحسَب محلياً بحزمة `adhan` (طريقة أم القرى، مذهب الشافعي) من إحداثيات
+  الجهاز عبر `geolocator`. عند رفض إذن الموقع أو تعطيله تُستخدم إحداثيات مكة
+  المكرمة كقيمة افتراضية ويظهر تنويه بذلك في الواجهة.
+- تفعيل «تنبيهات الأذان» يجدول خمسة تنبيهات يومية متكرّرة على مواقيت اليوم
+  المحسوبة عبر `flutter_local_notifications` + `AlarmManager`، فتظهر التنبيهات
+  حتى لو كان التطبيق مغلقاً على أندرويد.
+- «تنبيهات الأذكار المتفرقة» تجدول تنبيهات بالتدوير بين الاستغفار والتسبيح
+  والصلاة على النبي كل ساعة/ساعتين/3/4/6 ساعات بين 6 صباحاً و10 مساءً.
+- على الويب وسطح المكتب لا تدعم المنصّة التنبيهات المحلية، فيظهر تنبيه
+  «التنبيهات غير مدعومة على هذه المنصّة» دون أي تعطّل.
+- لاستخدام صوت أذان مخصّص للتنبيه: ضع `adhan.mp3` في
+  `android/app/src/main/res/raw/` واضبط
+  `sound: RawResourceAndroidNotificationSound('adhan')` في `_details` داخل
+  `lib/notification_service.dart`.
+
+## المسبحة العائمة
+
+- داخل التطبيق: زر دائري قابل للسحب، نقرة تزيد العدّاد باهتزاز خفيف
+  (`HapticFeedback`) وضغطة مطوّلة تصفّره، والقيمة محفوظة في `SharedPreferences`
+  بالمفتاح `tasbeeh_count`.
+- فوق التطبيقات الأخرى (أندرويد فقط): من الإعدادات → «المسبحة فوق التطبيقات»،
+  ويطلب التطبيق إذن *الظهور فوق التطبيقات الأخرى* عند أول تفعيل. تعمل النافذة في
+  محرّك Flutter منفصل من نقطة الدخول `overlayMain` في `lib/main.dart`، وتشترك مع
+  التطبيق في نفس عدّاد `tasbeeh_count`.
+- الأذونات والخدمة مُعرّفة في `android/app/src/main/AndroidManifest.xml`
+  (`SYSTEM_ALERT_WINDOW`, `FOREGROUND_SERVICE_SPECIAL_USE`, `OverlayService`).
+
+## الإعدادات
+
+شاشة الإعدادات تتيح: اللغة، السمة (تلقائي/نهاري/ليلي)، حجم الخط (80%–160%
+يُطبَّق على كل النصوص)، المقرئ المفضّل، تفعيل الموقع الجغرافي، تنبيهات الأذكار
+وتكرارها، الاهتزاز عند النقر، والمسبحة فوق التطبيقات. كل القيم محفوظة في
+`SharedPreferences`.
+
+## التحقّق
+
+```bash
+flutter analyze
+flutter test
+flutter build web --no-tree-shake-icons
+```
+
+ميزات الموقع الجغرافي والتنبيهات الخلفية والمسبحة فوق التطبيقات خاصة بأندرويد
+وتحتاج جهازاً أو محاكياً حقيقياً لتجربتها.
