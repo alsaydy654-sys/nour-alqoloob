@@ -161,4 +161,137 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get quranLoadError =>
       'تعذّر تحميل قاعدة بيانات القرآن. يرجى إعادة تشغيل التطبيق.';
+
+  @override
+  String get appearance => 'المظهر';
+
+  @override
+  String get theme => 'السمة';
+
+  @override
+  String get themeSystem => 'حسب النظام';
+
+  @override
+  String get themeLight => 'فاتح';
+
+  @override
+  String get themeDark => 'الوضع الليلي';
+
+  @override
+  String get fontSize => 'حجم الخط';
+
+  @override
+  String get fontSizePreview => 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
+
+  @override
+  String get reciter => 'المقرئ المفضل';
+
+  @override
+  String get prayerSection => 'الصلاة والتنبيهات';
+
+  @override
+  String get location => 'الموقع';
+
+  @override
+  String get useGps => 'حساب المواقيت حسب موقعي (GPS)';
+
+  @override
+  String get locating => 'جارٍ تحديد الموقع…';
+
+  @override
+  String get locationDenied =>
+      'تم رفض إذن الموقع؛ يتم استخدام مواقيت مكة المكرمة';
+
+  @override
+  String locationCoords(String lat, String lng) {
+    return 'خط العرض $lat — خط الطول $lng';
+  }
+
+  @override
+  String get defaultLocationNotice => 'مواقيت افتراضية (مكة المكرمة)';
+
+  @override
+  String get refreshLocation => 'تحديث الموقع';
+
+  @override
+  String nextPrayer(String name) {
+    return 'الصلاة القادمة: $name';
+  }
+
+  @override
+  String get prayerSunrise => 'الشروق';
+
+  @override
+  String get remindersTitle => 'تنبيهات الأذكار الدورية';
+
+  @override
+  String get remindersSubtitle =>
+      'استغفار وتسبيح وصلاة على النبي تعمل في الخلفية';
+
+  @override
+  String get reminderInterval => 'التكرار';
+
+  @override
+  String everyNHours(int hours) {
+    return 'كل $hours ساعة';
+  }
+
+  @override
+  String get reminderTitleIstighfar => 'وقت الاستغفار';
+
+  @override
+  String get reminderBodyIstighfar => 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ';
+
+  @override
+  String get reminderTitleTasbih => 'وقت التسبيح';
+
+  @override
+  String get reminderBodyTasbih => 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ';
+
+  @override
+  String get reminderTitleSalat => 'وقت الصلاة على النبي';
+
+  @override
+  String get reminderBodySalat =>
+      'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ';
+
+  @override
+  String get remindersOn => 'تم تفعيل تنبيهات الأذكار الدورية';
+
+  @override
+  String get remindersOff => 'تم إيقاف تنبيهات الأذكار الدورية';
+
+  @override
+  String get tasbeehSection => 'المسبحة';
+
+  @override
+  String get overlayTasbeeh => 'المسبحة فوق التطبيقات';
+
+  @override
+  String get overlaySubtitle => 'تظهر فوق أي تطبيق آخر مع العدّاد';
+
+  @override
+  String get overlayEnable => 'تشغيل المسبحة العائمة';
+
+  @override
+  String get overlayDisable => 'إيقاف المسبحة العائمة';
+
+  @override
+  String get overlayPermissionNeeded =>
+      'يجب السماح بـ«العرض فوق التطبيقات الأخرى»';
+
+  @override
+  String get overlayUnsupported => 'متوفّرة على أندرويد فقط';
+
+  @override
+  String get vibrateOnTap => 'اهتزاز خفيف عند النقر';
+
+  @override
+  String get resetCounter => 'تصفير العدّاد';
+
+  @override
+  String get counterReset => 'تم تصفير العدّاد';
+
+  @override
+  String get notificationsUnavailable => 'التنبيهات غير مدعومة على هذه المنصّة';
 }

@@ -161,4 +161,136 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get quranLoadError =>
       'قرآن ڈیٹا بیس لوڈ نہیں ہو سکا۔ براہِ کرم ایپ دوبارہ شروع کریں۔';
+
+  @override
+  String get appearance => 'ظاہری شکل';
+
+  @override
+  String get theme => 'تھیم';
+
+  @override
+  String get themeSystem => 'نظام کے مطابق';
+
+  @override
+  String get themeLight => 'روشن';
+
+  @override
+  String get themeDark => 'نائٹ موڈ';
+
+  @override
+  String get fontSize => 'فونٹ کا سائز';
+
+  @override
+  String get fontSizePreview => 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
+
+  @override
+  String get reciter => 'پسندیدہ قاری';
+
+  @override
+  String get prayerSection => 'نماز اور اطلاعات';
+
+  @override
+  String get location => 'مقام';
+
+  @override
+  String get useGps => 'میرے مقام (GPS) کے مطابق اوقات';
+
+  @override
+  String get locating => 'مقام کا تعین ہو رہا ہے…';
+
+  @override
+  String get locationDenied =>
+      'مقام کی اجازت رد ہوئی؛ مکہ مکرمہ کے اوقات استعمال ہو رہے ہیں';
+
+  @override
+  String locationCoords(String lat, String lng) {
+    return 'عرض البلد $lat — طول البلد $lng';
+  }
+
+  @override
+  String get defaultLocationNotice => 'طے شدہ اوقات (مکہ مکرمہ)';
+
+  @override
+  String get refreshLocation => 'مقام تازہ کریں';
+
+  @override
+  String nextPrayer(String name) {
+    return 'اگلی نماز: $name';
+  }
+
+  @override
+  String get prayerSunrise => 'طلوعِ آفتاب';
+
+  @override
+  String get remindersTitle => 'اذکار کی وقفے وقفے سے یاد دہانی';
+
+  @override
+  String get remindersSubtitle => 'استغفار، تسبیح اور درود پس منظر میں';
+
+  @override
+  String get reminderInterval => 'تکرار';
+
+  @override
+  String everyNHours(int hours) {
+    return 'ہر $hours گھنٹے';
+  }
+
+  @override
+  String get reminderTitleIstighfar => 'استغفار کا وقت';
+
+  @override
+  String get reminderBodyIstighfar => 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ';
+
+  @override
+  String get reminderTitleTasbih => 'تسبیح کا وقت';
+
+  @override
+  String get reminderBodyTasbih => 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ';
+
+  @override
+  String get reminderTitleSalat => 'درود شریف کا وقت';
+
+  @override
+  String get reminderBodySalat =>
+      'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ';
+
+  @override
+  String get remindersOn => 'اذکار کی یاد دہانی فعال ہو گئی';
+
+  @override
+  String get remindersOff => 'اذکار کی یاد دہانی بند ہو گئی';
+
+  @override
+  String get tasbeehSection => 'تسبیح';
+
+  @override
+  String get overlayTasbeeh => 'دوسری ایپس کے اوپر تسبیح';
+
+  @override
+  String get overlaySubtitle => 'کاؤنٹر کے ساتھ کسی بھی ایپ کے اوپر نظر آتی ہے';
+
+  @override
+  String get overlayEnable => 'فلوٹنگ تسبیح چلائیں';
+
+  @override
+  String get overlayDisable => 'فلوٹنگ تسبیح بند کریں';
+
+  @override
+  String get overlayPermissionNeeded =>
+      'براہِ کرم «دوسری ایپس کے اوپر دکھانے» کی اجازت دیں';
+
+  @override
+  String get overlayUnsupported => 'صرف اینڈرائیڈ پر دستیاب';
+
+  @override
+  String get vibrateOnTap => 'دبانے پر ہلکی وائبریشن';
+
+  @override
+  String get resetCounter => 'کاؤنٹر صفر کریں';
+
+  @override
+  String get counterReset => 'کاؤنٹر صفر کر دیا گیا';
+
+  @override
+  String get notificationsUnavailable => 'اس پلیٹ فارم پر اطلاعات معاون نہیں';
 }

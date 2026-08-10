@@ -164,4 +164,139 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get quranLoadError =>
       'Impossible de charger la base de données du Coran. Veuillez redémarrer l\'application.';
+
+  @override
+  String get appearance => 'Apparence';
+
+  @override
+  String get theme => 'Thème';
+
+  @override
+  String get themeSystem => 'Par défaut du système';
+
+  @override
+  String get themeLight => 'Clair';
+
+  @override
+  String get themeDark => 'Mode sombre';
+
+  @override
+  String get fontSize => 'Taille de police';
+
+  @override
+  String get fontSizePreview => 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
+
+  @override
+  String get reciter => 'Récitateur préféré';
+
+  @override
+  String get prayerSection => 'Prière et alertes';
+
+  @override
+  String get location => 'Position';
+
+  @override
+  String get useGps => 'Calculer les heures selon ma position (GPS)';
+
+  @override
+  String get locating => 'Détection de la position…';
+
+  @override
+  String get locationDenied =>
+      'Autorisation de localisation refusée ; heures de La Mecque utilisées';
+
+  @override
+  String locationCoords(String lat, String lng) {
+    return 'Latitude $lat — Longitude $lng';
+  }
+
+  @override
+  String get defaultLocationNotice => 'Heures par défaut (La Mecque)';
+
+  @override
+  String get refreshLocation => 'Actualiser la position';
+
+  @override
+  String nextPrayer(String name) {
+    return 'Prochaine prière : $name';
+  }
+
+  @override
+  String get prayerSunrise => 'Lever du soleil';
+
+  @override
+  String get remindersTitle => 'Rappels de dhikr périodiques';
+
+  @override
+  String get remindersSubtitle =>
+      'Istighfar, tasbih et salat sur le Prophète, en arrière-plan';
+
+  @override
+  String get reminderInterval => 'Fréquence';
+
+  @override
+  String everyNHours(int hours) {
+    return 'Toutes les $hours heures';
+  }
+
+  @override
+  String get reminderTitleIstighfar => 'Heure de l\'Istighfar';
+
+  @override
+  String get reminderBodyIstighfar => 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ';
+
+  @override
+  String get reminderTitleTasbih => 'Heure du Tasbih';
+
+  @override
+  String get reminderBodyTasbih => 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ';
+
+  @override
+  String get reminderTitleSalat => 'Heure de la Salat sur le Prophète';
+
+  @override
+  String get reminderBodySalat =>
+      'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ';
+
+  @override
+  String get remindersOn => 'Rappels de dhikr activés';
+
+  @override
+  String get remindersOff => 'Rappels de dhikr désactivés';
+
+  @override
+  String get tasbeehSection => 'Tasbeeh';
+
+  @override
+  String get overlayTasbeeh => 'Tasbeeh au-dessus des autres applis';
+
+  @override
+  String get overlaySubtitle =>
+      'Flotte au-dessus de toute autre application avec le compteur';
+
+  @override
+  String get overlayEnable => 'Activer le Tasbeeh flottant';
+
+  @override
+  String get overlayDisable => 'Désactiver le Tasbeeh flottant';
+
+  @override
+  String get overlayPermissionNeeded =>
+      'Veuillez autoriser « Affichage au-dessus des autres applis »';
+
+  @override
+  String get overlayUnsupported => 'Disponible uniquement sur Android';
+
+  @override
+  String get vibrateOnTap => 'Légère vibration au toucher';
+
+  @override
+  String get resetCounter => 'Réinitialiser le compteur';
+
+  @override
+  String get counterReset => 'Compteur réinitialisé';
+
+  @override
+  String get notificationsUnavailable =>
+      'Les notifications ne sont pas prises en charge sur cette plateforme';
 }

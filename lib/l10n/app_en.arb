@@ -54,5 +54,55 @@
   "@searchResultSubtitle": {
     "placeholders": { "surah": { "type": "String" }, "ayah": { "type": "int" } }
   },
-  "quranLoadError": "Could not load the Quran database. Please restart the app."
+  "quranLoadError": "Could not load the Quran database. Please restart the app.",
+  "appearance": "Appearance",
+  "theme": "Theme",
+  "themeSystem": "System default",
+  "themeLight": "Light",
+  "themeDark": "Dark mode",
+  "fontSize": "Font size",
+  "fontSizePreview": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ",
+  "reciter": "Preferred reciter",
+  "prayerSection": "Prayer & alerts",
+  "location": "Location",
+  "useGps": "Calculate times from my location (GPS)",
+  "locating": "Detecting location…",
+  "locationDenied": "Location permission denied; using Makkah times",
+  "locationCoords": "Latitude {lat} — Longitude {lng}",
+  "@locationCoords": {
+    "placeholders": { "lat": { "type": "String" }, "lng": { "type": "String" } }
+  },
+  "defaultLocationNotice": "Default times (Makkah)",
+  "refreshLocation": "Refresh location",
+  "nextPrayer": "Next prayer: {name}",
+  "@nextPrayer": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "prayerSunrise": "Sunrise",
+  "remindersTitle": "Periodic dhikr reminders",
+  "remindersSubtitle": "Istighfar, tasbih and salat on the Prophet, running in the background",
+  "reminderInterval": "Frequency",
+  "everyNHours": "Every {hours} hours",
+  "@everyNHours": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "reminderTitleIstighfar": "Time for Istighfar",
+  "reminderBodyIstighfar": "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ",
+  "reminderTitleTasbih": "Time for Tasbih",
+  "reminderBodyTasbih": "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+  "reminderTitleSalat": "Time for Salat on the Prophet",
+  "reminderBodySalat": "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ",
+  "remindersOn": "Periodic dhikr reminders enabled",
+  "remindersOff": "Periodic dhikr reminders disabled",
+  "tasbeehSection": "Tasbeeh",
+  "overlayTasbeeh": "Tasbeeh over other apps",
+  "overlaySubtitle": "Floats above any other app with the counter",
+  "overlayEnable": "Start floating Tasbeeh",
+  "overlayDisable": "Stop floating Tasbeeh",
+  "overlayPermissionNeeded": "Please allow \"Display over other apps\"",
+  "overlayUnsupported": "Available on Android only",
+  "vibrateOnTap": "Light vibration on tap",
+  "resetCounter": "Reset counter",
+  "counterReset": "Counter reset",
+  "notificationsUnavailable": "Notifications are not supported on this platform"
 }

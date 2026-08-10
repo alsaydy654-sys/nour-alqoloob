@@ -163,4 +163,137 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get quranLoadError =>
       'Could not load the Quran database. Please restart the app.';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get themeSystem => 'System default';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark mode';
+
+  @override
+  String get fontSize => 'Font size';
+
+  @override
+  String get fontSizePreview => 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
+
+  @override
+  String get reciter => 'Preferred reciter';
+
+  @override
+  String get prayerSection => 'Prayer & alerts';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get useGps => 'Calculate times from my location (GPS)';
+
+  @override
+  String get locating => 'Detecting location…';
+
+  @override
+  String get locationDenied => 'Location permission denied; using Makkah times';
+
+  @override
+  String locationCoords(String lat, String lng) {
+    return 'Latitude $lat — Longitude $lng';
+  }
+
+  @override
+  String get defaultLocationNotice => 'Default times (Makkah)';
+
+  @override
+  String get refreshLocation => 'Refresh location';
+
+  @override
+  String nextPrayer(String name) {
+    return 'Next prayer: $name';
+  }
+
+  @override
+  String get prayerSunrise => 'Sunrise';
+
+  @override
+  String get remindersTitle => 'Periodic dhikr reminders';
+
+  @override
+  String get remindersSubtitle =>
+      'Istighfar, tasbih and salat on the Prophet, running in the background';
+
+  @override
+  String get reminderInterval => 'Frequency';
+
+  @override
+  String everyNHours(int hours) {
+    return 'Every $hours hours';
+  }
+
+  @override
+  String get reminderTitleIstighfar => 'Time for Istighfar';
+
+  @override
+  String get reminderBodyIstighfar => 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ';
+
+  @override
+  String get reminderTitleTasbih => 'Time for Tasbih';
+
+  @override
+  String get reminderBodyTasbih => 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ';
+
+  @override
+  String get reminderTitleSalat => 'Time for Salat on the Prophet';
+
+  @override
+  String get reminderBodySalat =>
+      'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ';
+
+  @override
+  String get remindersOn => 'Periodic dhikr reminders enabled';
+
+  @override
+  String get remindersOff => 'Periodic dhikr reminders disabled';
+
+  @override
+  String get tasbeehSection => 'Tasbeeh';
+
+  @override
+  String get overlayTasbeeh => 'Tasbeeh over other apps';
+
+  @override
+  String get overlaySubtitle => 'Floats above any other app with the counter';
+
+  @override
+  String get overlayEnable => 'Start floating Tasbeeh';
+
+  @override
+  String get overlayDisable => 'Stop floating Tasbeeh';
+
+  @override
+  String get overlayPermissionNeeded =>
+      'Please allow \"Display over other apps\"';
+
+  @override
+  String get overlayUnsupported => 'Available on Android only';
+
+  @override
+  String get vibrateOnTap => 'Light vibration on tap';
+
+  @override
+  String get resetCounter => 'Reset counter';
+
+  @override
+  String get counterReset => 'Counter reset';
+
+  @override
+  String get notificationsUnavailable =>
+      'Notifications are not supported on this platform';
 }

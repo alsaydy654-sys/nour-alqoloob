@@ -395,6 +395,252 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر تحميل قاعدة بيانات القرآن. يرجى إعادة تشغيل التطبيق.'**
   String get quranLoadError;
+
+  /// No description provided for @appearance.
+  ///
+  /// In ar, this message translates to:
+  /// **'المظهر'**
+  String get appearance;
+
+  /// No description provided for @theme.
+  ///
+  /// In ar, this message translates to:
+  /// **'السمة'**
+  String get theme;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسب النظام'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاتح'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوضع الليلي'**
+  String get themeDark;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجم الخط'**
+  String get fontSize;
+
+  /// No description provided for @fontSizePreview.
+  ///
+  /// In ar, this message translates to:
+  /// **'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ'**
+  String get fontSizePreview;
+
+  /// No description provided for @reciter.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقرئ المفضل'**
+  String get reciter;
+
+  /// No description provided for @prayerSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصلاة والتنبيهات'**
+  String get prayerSection;
+
+  /// No description provided for @location.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع'**
+  String get location;
+
+  /// No description provided for @useGps.
+  ///
+  /// In ar, this message translates to:
+  /// **'حساب المواقيت حسب موقعي (GPS)'**
+  String get useGps;
+
+  /// No description provided for @locating.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحديد الموقع…'**
+  String get locating;
+
+  /// No description provided for @locationDenied.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رفض إذن الموقع؛ يتم استخدام مواقيت مكة المكرمة'**
+  String get locationDenied;
+
+  /// No description provided for @locationCoords.
+  ///
+  /// In ar, this message translates to:
+  /// **'خط العرض {lat} — خط الطول {lng}'**
+  String locationCoords(String lat, String lng);
+
+  /// No description provided for @defaultLocationNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'مواقيت افتراضية (مكة المكرمة)'**
+  String get defaultLocationNotice;
+
+  /// No description provided for @refreshLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث الموقع'**
+  String get refreshLocation;
+
+  /// No description provided for @nextPrayer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصلاة القادمة: {name}'**
+  String nextPrayer(String name);
+
+  /// No description provided for @prayerSunrise.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروق'**
+  String get prayerSunrise;
+
+  /// No description provided for @remindersTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنبيهات الأذكار الدورية'**
+  String get remindersTitle;
+
+  /// No description provided for @remindersSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'استغفار وتسبيح وصلاة على النبي تعمل في الخلفية'**
+  String get remindersSubtitle;
+
+  /// No description provided for @reminderInterval.
+  ///
+  /// In ar, this message translates to:
+  /// **'التكرار'**
+  String get reminderInterval;
+
+  /// No description provided for @everyNHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل {hours} ساعة'**
+  String everyNHours(int hours);
+
+  /// No description provided for @reminderTitleIstighfar.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت الاستغفار'**
+  String get reminderTitleIstighfar;
+
+  /// No description provided for @reminderBodyIstighfar.
+  ///
+  /// In ar, this message translates to:
+  /// **'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ'**
+  String get reminderBodyIstighfar;
+
+  /// No description provided for @reminderTitleTasbih.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت التسبيح'**
+  String get reminderTitleTasbih;
+
+  /// No description provided for @reminderBodyTasbih.
+  ///
+  /// In ar, this message translates to:
+  /// **'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ'**
+  String get reminderBodyTasbih;
+
+  /// No description provided for @reminderTitleSalat.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت الصلاة على النبي'**
+  String get reminderTitleSalat;
+
+  /// No description provided for @reminderBodySalat.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ'**
+  String get reminderBodySalat;
+
+  /// No description provided for @remindersOn.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تفعيل تنبيهات الأذكار الدورية'**
+  String get remindersOn;
+
+  /// No description provided for @remindersOff.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إيقاف تنبيهات الأذكار الدورية'**
+  String get remindersOff;
+
+  /// No description provided for @tasbeehSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسبحة'**
+  String get tasbeehSection;
+
+  /// No description provided for @overlayTasbeeh.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسبحة فوق التطبيقات'**
+  String get overlayTasbeeh;
+
+  /// No description provided for @overlaySubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تظهر فوق أي تطبيق آخر مع العدّاد'**
+  String get overlaySubtitle;
+
+  /// No description provided for @overlayEnable.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشغيل المسبحة العائمة'**
+  String get overlayEnable;
+
+  /// No description provided for @overlayDisable.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف المسبحة العائمة'**
+  String get overlayDisable;
+
+  /// No description provided for @overlayPermissionNeeded.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب السماح بـ«العرض فوق التطبيقات الأخرى»'**
+  String get overlayPermissionNeeded;
+
+  /// No description provided for @overlayUnsupported.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفّرة على أندرويد فقط'**
+  String get overlayUnsupported;
+
+  /// No description provided for @vibrateOnTap.
+  ///
+  /// In ar, this message translates to:
+  /// **'اهتزاز خفيف عند النقر'**
+  String get vibrateOnTap;
+
+  /// No description provided for @resetCounter.
+  ///
+  /// In ar, this message translates to:
+  /// **'تصفير العدّاد'**
+  String get resetCounter;
+
+  /// No description provided for @counterReset.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تصفير العدّاد'**
+  String get counterReset;
+
+  /// No description provided for @notificationsUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'التنبيهات غير مدعومة على هذه المنصّة'**
+  String get notificationsUnavailable;
 }
 
 class _AppLocalizationsDelegate
